@@ -1,0 +1,1 @@
+# Session Auth boilerplate with MERN stack

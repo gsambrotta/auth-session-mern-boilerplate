@@ -1,4 +1,4 @@
-const UserSchema = require('../Models/UserSchema')
+const UserSchema = require('../models/UserSchema')
 const bcrypt = require('bcrypt')
 const express = require('express')
 const router = express.Router()
