@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Link as RouterLink } from 'react-router-dom'
-
+import validator from 'validator'
 import {
   Paper,
   Container,
@@ -17,13 +17,18 @@ import {
   IconButton,
   InputLabel,
   FormControl,
+  FormHelperText,
 } from '@mui/material'
 import {
   Face as FaceIcon,
+  TrendingUpTwoTone,
   Visibility,
   VisibilityOff,
 } from '@mui/icons-material'
 import theme from '../styles/theme'
+
+const regexPassword =
+  /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[^\w\s]).{8,}$/
 
 function Signup({}) {
   const [values, setValues] = useState({
@@ -33,9 +38,35 @@ function Signup({}) {
     showPassword: false,
     showRepeatPassword: false,
   })
+  const [errors, setErrors] = useState({
+    email: false,
+    password: false,
+    repeatPassword: false,
+    fetchError: false,
+  })
 
-  const handleChange = (prop) => (event) => {
-    setValues({ ...values, [prop]: event.target.value })
+  const handleChange = (fieldName) => (event) => {
+    const currValue = event.target.value
+    switch (fieldName) {
+      case 'email':
+        validator.isEmail(currValue)
+          ? setErrors({ ...errors, email: false })
+          : setErrors({ ...errors, email: true })
+        break
+
+      case 'password':
+        regexPassword.test(currValue)
+          ? setErrors({ ...errors, password: false })
+          : setErrors({ ...errors, password: true })
+        break
+
+      case 'repeatPassword':
+        currValue === values.password
+          ? setErrors({ ...errors, repeatPassword: false })
+          : setErrors({ ...errors, repeatPassword: true })
+        break
+    }
+    setValues({ ...values, [fieldName]: event.target.value })
   }
 
   const handleShowPassword = (showPasswordField) => {
@@ -43,6 +74,20 @@ function Signup({}) {
       ...values,
       [showPasswordField]: !values[showPasswordField],
     })
+  }
+
+  const handleSubmit = async (event) => {
+    event.preventDefault()
+
+    try {
+      const res = await fetch('/api/register')
+      if (!res.ok) return setErrors({ ...errors, fetchError: true })
+
+      // TODO: go to dashboard
+      return
+    } catch (error) {
+      setErrors({ ...errors, fetchError: true })
+    }
   }
 
   return (
@@ -71,6 +116,8 @@ function Signup({}) {
           </Container>
           <Stack
             component='form'
+            onSubmit={handleSubmit}
+            noValidate
             spacing={6}
             sx={{ bgcolor: '#f5f5f6', padding: '40px' }}>
             <TextField
@@ -78,7 +125,8 @@ function Signup({}) {
               type='email'
               label='Email'
               onChange={handleChange('email')}
-              // error={errorState}
+              error={errors.email}
+              helperText={errors.email && 'Please insert a valid email address'}
             />
 
             <FormControl variant='filled'>
@@ -88,6 +136,7 @@ function Signup({}) {
                 type={values.showPassword ? 'text' : 'password'}
                 value={values.password}
                 onChange={handleChange('password')}
+                error={errors.password}
                 endAdornment={
                   <InputAdornment position='end'>
                     <IconButton
@@ -99,7 +148,13 @@ function Signup({}) {
                   </InputAdornment>
                 }
               />
+
+              <FormHelperText error={errors.password}>
+                Password must be at least 8 characters, have one simbol, 1
+                upppercase letter, 1 lowercase and 1 digit
+              </FormHelperText>
             </FormControl>
+
             <FormControl variant='filled'>
               <InputLabel htmlFor='password-repeat-field'>
                 Repeat password
@@ -124,6 +179,11 @@ function Signup({}) {
                   </InputAdornment>
                 }
               />
+              {errors.repeatPassword && (
+                <FormHelperText error={errors.repeatPassword}>
+                  Password must be the same as above
+                </FormHelperText>
+              )}
             </FormControl>
             <Box
               sx={{
@@ -133,6 +193,7 @@ function Signup({}) {
               <Button
                 variant='contained'
                 size='large'
+                type='submit'
                 sx={{
                   minWidth: '70%',
                 }}>
