@@ -21,7 +21,6 @@ import {
 } from '@mui/material'
 import {
   Face as FaceIcon,
-  TrendingUpTwoTone,
   Visibility,
   VisibilityOff,
 } from '@mui/icons-material'
@@ -30,7 +29,7 @@ import theme from '../styles/theme'
 const regexPassword =
   /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[^\w\s]).{8,}$/
 
-function Signup({}) {
+function Signup() {
   const [values, setValues] = useState({
     email: '',
     password: '',
@@ -43,6 +42,7 @@ function Signup({}) {
     password: false,
     repeatPassword: false,
     fetchError: false,
+    fetchErrorMsg: '',
   })
 
   const handleChange = (fieldName) => (event) => {
@@ -80,13 +80,49 @@ function Signup({}) {
     event.preventDefault()
 
     try {
-      const res = await fetch('/api/register')
-      if (!res.ok) return setErrors({ ...errors, fetchError: true })
+      const res = await fetch('http://localhost:5000/api/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: values.email,
+          password: values.password,
+        }),
+      })
 
-      // TODO: go to dashboard
+      if (!res.ok) {
+        const error = await res.json()
+        return setErrors({
+          ...errors,
+          fetchError: true,
+          fetchErrorMsg: error.msg,
+        })
+      }
+
+      const data = await res.json()
+      // this is just a visual feedback for user for this demo
+      // this will not be an error, rather we will show a different UI or redirect user to dashboard
+      setErrors({
+        ...errors,
+        fetchError: true,
+        fetchErrorMsg: data.msg,
+      })
+      setValues({
+        email: '',
+        password: '',
+        repeatPassword: '',
+        showPassword: false,
+        showRepeatPassword: false,
+      })
       return
     } catch (error) {
-      setErrors({ ...errors, fetchError: true })
+      setErrors({
+        ...errors,
+        fetchError: true,
+        fetchErrorMsg:
+          'There was a problem with our server, please try again later',
+      })
     }
   }
 
@@ -124,6 +160,7 @@ function Signup({}) {
               variant='filled'
               type='email'
               label='Email'
+              value={values.email}
               onChange={handleChange('email')}
               error={errors.email}
               helperText={errors.email && 'Please insert a valid email address'}
@@ -200,6 +237,9 @@ function Signup({}) {
                 Sign me up!
               </Button>
             </Box>
+            {errors.fetchError && (
+              <FormHelperText error>{errors.fetchErrorMsg}</FormHelperText>
+            )}
             <Divider />
             <Typography paragraph align='center'>
               Already have an account?{' '}

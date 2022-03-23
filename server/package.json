@@ -10,13 +10,14 @@
   "author": "gsambrotta",
   "license": "ISC",
   "dependencies": {
+    "bcrypt": "^5.0.1",
+    "connect-mongodb-session": "^3.1.1",
     "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
     "dotenv": "^16.0.0",
     "express": "^4.17.2",
     "express-session": "^1.17.2",
-    "nodemon": "^2.0.15",
-    "bcrypt": "^5.0.1",
-    "connect-mongodb-session": "^3.1.1",
-    "mongoose": "^6.2.4"
+    "mongoose": "^6.2.4",
+    "nodemon": "^2.0.15"
   }
 }

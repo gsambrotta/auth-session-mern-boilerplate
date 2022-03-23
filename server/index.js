@@ -3,6 +3,7 @@ const session = require('express-session')
 const express = require('express')
 const mongoose = require('mongoose')
 const path = require('path')
+const cors = require('cors')
 const MongoDBStore = require('connect-mongodb-session')(session) // add this package to store the user session id automatically on mongodb
 // check on your db, you will have another collection (next to people) which is 'mySessions'
 const loginRouter = require('./routes/loginRoutes')
@@ -11,6 +12,10 @@ const app = express()
 const MAX_AGE = 1000 * 60 * 60 * 3 // 3hrs
 const port = process.env.PORT || 5001
 
+const corsOptions = {
+  origin: 'http://localhost:3000',
+  optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
+}
 // This is where your API is making its initial connection to the database
 mongoose.Promise = global.Promise
 mongoose.connect(process.env.DATABASE_CONNECTION_STRING, {
@@ -33,9 +38,12 @@ app.use(
       sameSite: false,
       secure: false, // to turn on just in production
     },
+    resave: false,
+    saveUninitialized: false,
   })
 )
 
+app.use(cors(corsOptions))
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(express.static(path.join(__dirname, 'public')))

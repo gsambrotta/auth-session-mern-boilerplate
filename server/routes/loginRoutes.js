@@ -6,9 +6,8 @@ const router = express.Router()
 router.post('/register', async (req, res) => {
   const { email, password } = req.body
 
-  if (!email || !password) {
+  if (!email || !password)
     return res.status(400).json({ msg: 'Password and email are required' })
-  }
 
   if (password.length < 8) {
     return res
@@ -20,16 +19,13 @@ router.post('/register', async (req, res) => {
   if (user) return res.status(400).json({ msg: 'User already exists' })
 
   const newUser = new UserSchema({ email, password })
-  console.log({ newUser })
-
   bcrypt.hash(password, 7, async (err, hash) => {
-    console.log({ hash })
     if (err)
       return res.status(400).json({ msg: 'error while saving the password' })
 
     newUser.password = hash
     const savedUserRes = await newUser.save()
-    console.log({ savedUserRes })
+
     if (savedUserRes)
       return res.status(200).json({ msg: 'user is succesfully saved' })
   })
