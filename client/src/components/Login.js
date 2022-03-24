@@ -1,5 +1,8 @@
 import React, { useState } from 'react'
 import { Link as RouterLink } from 'react-router-dom'
+import validator from 'validator'
+import { regexPassword } from '../utils'
+
 import {
   Paper,
   Container,
@@ -16,6 +19,7 @@ import {
   IconButton,
   InputLabel,
   FormControl,
+  FormHelperText,
 } from '@mui/material'
 import {
   Face as FaceIcon,
@@ -30,9 +34,25 @@ function Login({}) {
     password: '',
     showPassword: false,
   })
+  const [errors, setErrors] = useState({
+    email: false,
+    password: false,
+    fetchError: false,
+    fetchErrorMsg: '',
+  })
 
-  const handleChange = (prop) => (event) => {
-    setValues({ ...values, [prop]: event.target.value })
+  const handleChange = (fieldName) => (event) => {
+    const currValue = event.target.value
+    let isCorrectValue =
+      fieldName === 'email'
+        ? validator.isEmail(currValue)
+        : regexPassword.test(currValue)
+
+    isCorrectValue
+      ? setErrors({ ...errors, [fieldName]: false })
+      : setErrors({ ...errors, [fieldName]: true })
+
+    setValues({ ...values, [fieldName]: event.target.value })
   }
 
   const handleShowPassword = () => {
@@ -40,6 +60,55 @@ function Login({}) {
       ...values,
       showPassword: !values.showPassword,
     })
+  }
+
+  const handleSubmit = async (event) => {
+    event.preventDefault()
+
+    try {
+      const res = await fetch('http://localhost:5000/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: values.email,
+          password: values.password,
+        }),
+      })
+
+      if (!res.ok) {
+        const error = await res.json()
+        return setErrors({
+          ...errors,
+          fetchError: true,
+          fetchErrorMsg: error.msg,
+        })
+      }
+
+      const data = await res.json()
+      console.log({ data })
+      // this is just a visual feedback for user for this demo
+      // this will not be an error, rather we will show a different UI or redirect user to dashboard
+      setErrors({
+        ...errors,
+        fetchError: true,
+        fetchErrorMsg: data.msg,
+      })
+      setValues({
+        email: '',
+        password: '',
+        showPassword: false,
+      })
+      return
+    } catch (error) {
+      setErrors({
+        ...errors,
+        fetchError: true,
+        fetchErrorMsg:
+          'There was a problem with our server, please try again later',
+      })
+    }
   }
 
   return (
@@ -68,14 +137,18 @@ function Login({}) {
           </Container>
           <Stack
             component='form'
+            onSubmit={handleSubmit}
+            noValidate
             spacing={6}
             sx={{ bgcolor: '#f5f5f6', padding: '40px' }}>
             <TextField
               variant='filled'
               type='email'
               label='Email'
+              value={values.email}
               onChange={handleChange('email')}
-              // error={errorState}
+              error={errors.email}
+              helperText={errors.email && 'Please insert a valid email address'}
             />
 
             <FormControl variant='filled'>
@@ -85,6 +158,7 @@ function Login({}) {
                 type={values.showPassword ? 'text' : 'password'}
                 value={values.password}
                 onChange={handleChange('password')}
+                error={errors.password}
                 endAdornment={
                   <InputAdornment position='end'>
                     <IconButton
@@ -105,12 +179,17 @@ function Login({}) {
               <Button
                 variant='contained'
                 size='large'
+                type='submit'
+                disabled={errors.email || errors.password}
                 sx={{
                   minWidth: '70%',
                 }}>
                 Login
               </Button>
             </Box>
+            {errors.fetchError && (
+              <FormHelperText error>{errors.fetchErrorMsg}</FormHelperText>
+            )}
             <Divider />
             <Typography paragraph align='center'>
               Don't have an account yet?{' '}

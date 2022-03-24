@@ -36,12 +36,12 @@ router.post(`/login`, async (req, res) => {
   const { email, password } = req.body
 
   if (!email || !password) {
-    res.status(400).json({ message: 'Something missing' })
+    res.status(400).json({ msg: 'Something missing' })
   }
 
   const user = await UserSchema.findOne({ email: email }) // finding user in db
   if (!user) {
-    return res.status(400).json({ message: 'User not found' })
+    return res.status(400).json({ msg: 'User not found' })
   }
 
   const matchPassword = await bcrypt.compare(password, user.password)
@@ -50,9 +50,9 @@ router.post(`/login`, async (req, res) => {
     session.userSession = userSession // attach user session to session object from express-session
     return res
       .status(200)
-      .json({ message: 'You have logged in successfully', userSession }) // attach user session id to the response. It will be transfer in the cookies
+      .json({ msg: 'You have logged in successfully', userSession }) // attach user session id to the response. It will be transfer in the cookies
   } else {
-    return res.status(400).json({ message: 'Invalid credential' })
+    return res.status(400).json({ msg: 'Invalid credential' })
   }
 })
 

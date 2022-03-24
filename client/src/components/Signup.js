@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Link as RouterLink } from 'react-router-dom'
 import validator from 'validator'
+import { regexPassword } from '../utils'
 import {
   Paper,
   Container,
@@ -25,9 +26,6 @@ import {
   VisibilityOff,
 } from '@mui/icons-material'
 import theme from '../styles/theme'
-
-const regexPassword =
-  /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[^\w\s]).{8,}$/
 
 function Signup() {
   const [values, setValues] = useState({
@@ -103,6 +101,7 @@ function Signup() {
       const data = await res.json()
       // this is just a visual feedback for user for this demo
       // this will not be an error, rather we will show a different UI or redirect user to dashboard
+      // ideally we also want a way to confirm their email or identity
       setErrors({
         ...errors,
         fetchError: true,
@@ -187,8 +186,8 @@ function Signup() {
               />
 
               <FormHelperText error={errors.password}>
-                Password must be at least 8 characters, have one simbol, 1
-                upppercase letter, 1 lowercase and 1 digit
+                Password must be at least 8 characters, have one symbol, 1
+                uppercase letter, 1 lowercase and 1 digit
               </FormHelperText>
             </FormControl>
 
