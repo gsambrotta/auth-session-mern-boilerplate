@@ -2,7 +2,6 @@ require('dotenv').config()
 const session = require('express-session')
 const express = require('express')
 const mongoose = require('mongoose')
-const path = require('path')
 const cors = require('cors')
 const MongoDBStore = require('connect-mongodb-session')(session) // add this package to store the user session id automatically on mongodb
 // check on your db, you will have another collection (next to people) which is 'mySessions'
@@ -38,15 +37,13 @@ app.use(
       sameSite: false,
       secure: false, // to turn on just in production
     },
-    resave: false,
+    resave: true,
     saveUninitialized: false,
   })
 )
 
 app.use(cors(corsOptions))
 app.use(express.json())
-app.use(express.urlencoded({ extended: false }))
-app.use(express.static(path.join(__dirname, 'public')))
 
 // ROUTERS
 app.use('/api', loginRouter)

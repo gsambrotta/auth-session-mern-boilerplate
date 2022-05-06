@@ -66,7 +66,7 @@ function Login({}) {
     event.preventDefault()
 
     try {
-      const res = await fetch('http://localhost:5000/api/login', {
+      const res = await fetch('/api/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -88,6 +88,7 @@ function Login({}) {
 
       const data = await res.json()
       console.log({ data })
+
       // this is just a visual feedback for user for this demo
       // this will not be an error, rather we will show a different UI or redirect user to dashboard
       setErrors({
